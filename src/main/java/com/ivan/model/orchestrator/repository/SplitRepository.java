@@ -1,6 +1,4 @@
-package com.ivan.model.common.repository;
-
-import java.util.Optional;
+package com.ivan.model.orchestrator.repository;
 
 public interface SplitRepository<M, ID> {
     M save(M model);

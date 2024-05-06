@@ -1,7 +1,7 @@
 package com.ivan;
 
-import com.ivan.model.test.model.ExampleSplitModel;
-import com.ivan.model.test.model.repo.ExampleSplitModelRepository;
+import com.ivan.model.executor.model.ExampleSplitModel;
+import com.ivan.model.executor.model.repo.ExampleSplitModelRepository;
 import jakarta.annotation.PostConstruct;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

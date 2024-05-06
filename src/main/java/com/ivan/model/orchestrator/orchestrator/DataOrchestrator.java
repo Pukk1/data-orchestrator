@@ -1,4 +1,4 @@
-package com.ivan.model.common.orchestrator;
+package com.ivan.model.orchestrator.orchestrator;
 
 import org.springframework.stereotype.Component;
 

@@ -1,5 +1,6 @@
-package com.ivan.model.postgres.model;
+package com.ivan.model.executor.postgres.model;
 
+import com.ivan.model.executor.postgres.model.repo.ExamplePostgresRepository;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 

@@ -1,7 +1,6 @@
-package com.ivan.model.common.configuration.processor;
+package com.ivan.model.orchestrator.configuration.processor;
 
-import com.ivan.model.postgres.model.repo.ExamplePostgresRepository;
-import jakarta.annotation.PostConstruct;
+import com.ivan.model.executor.postgres.model.repo.ExamplePostgresRepository;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -12,11 +11,6 @@ public class SplitRepositoryBeanPostProcessor implements BeanPostProcessor {
 
     @Autowired
     public ExamplePostgresRepository examplePostgresRepository;
-
-    @PostConstruct
-    public void doPostConstruct(){
-        System.out.println("klsjadlkasjd");
-    }
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {

@@ -8,9 +8,11 @@ import com.ivan.model.executor.postgres.model.ExamplePostgresModel;
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+@Data
 @SplitEntity(
         entity = ExamplePostgresModel.class,
         entityHandlerRepository = ExamplePostgresRepository.class,

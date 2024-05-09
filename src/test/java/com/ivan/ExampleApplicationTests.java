@@ -20,7 +20,7 @@ class ExampleApplicationTests {
 
     @Test
     void testSave() {
-		ExampleSplitModel exampleSplitModel = new ExampleSplitModel(0L, "test postgres", "test mongo");
+		ExampleSplitModel exampleSplitModel = new ExampleSplitModel(1L, "test postgres", "test mongo");
 		exampleSplitModelRepository.save(exampleSplitModel);
     }
 

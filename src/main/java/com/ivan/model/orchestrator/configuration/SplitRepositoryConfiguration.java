@@ -1,6 +1,7 @@
 package com.ivan.model.orchestrator.configuration;
 
 import com.ivan.model.orchestrator.annatation.SplitEntity;
+import com.ivan.model.orchestrator.orchestrator.connector.NoSQLConnector;
 import com.ivan.model.orchestrator.orchestrator.connector.SQLConnector;
 import com.ivan.model.orchestrator.repository.SplitRepository;
 import jakarta.annotation.PostConstruct;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.repository.NoRepositoryBean;
 
 import java.lang.reflect.InvocationHandler;
@@ -35,6 +37,8 @@ public class SplitRepositoryConfiguration implements BeanFactoryAware {
 
     @Autowired
     private SQLConnector sqlConnector;
+    @Autowired
+    private NoSQLConnector noSQLConnector;
 
     private ConfigurableBeanFactory configurableBeanFactory;
 
@@ -53,11 +57,21 @@ public class SplitRepositoryConfiguration implements BeanFactoryAware {
             var splitAnnotation = (SplitEntity) sprlitEntityClass.getAnnotation(SplitEntity.class);
 
             var entity = splitAnnotation.entity();
-            var entityHandlerRepository = (JpaRepository) configurableBeanFactory.getBean(splitAnnotation.entityHandlerRepository());
+            var sqlRepository = (JpaRepository) configurableBeanFactory.getBean(splitAnnotation.entityHandlerRepository());
             var document = splitAnnotation.document();
-            var documentHandlerRepository = splitAnnotation.documentHandlerRepository();
+            var noSqlRepository = (MongoRepository) configurableBeanFactory.getBean(splitAnnotation.documentHandlerRepository());
 
-            var implementation = Proxy.newProxyInstance(repoClass.getClassLoader(), new Class[]{repoClass}, new SplitRepositoryInvocationHandler(entityHandlerRepository, entity, sprlitEntityClass));
+            var implementation = Proxy.newProxyInstance(
+                    repoClass.getClassLoader(),
+                    new Class[]{repoClass},
+                    new SplitRepositoryInvocationHandler(
+                            sqlRepository,
+                            noSqlRepository,
+                            entity,
+                            document,
+                            sprlitEntityClass
+                    )
+            );
 
             String beanName = repoClass.getName();
             configurableBeanFactory.registerSingleton(beanName, implementation);
@@ -82,15 +96,19 @@ public class SplitRepositoryConfiguration implements BeanFactoryAware {
                 .collect(Collectors.toList());
     }
 
-    public class SplitRepositoryInvocationHandler<SM, E, ID extends Number> implements InvocationHandler {
+    public class SplitRepositoryInvocationHandler<SM, E,ME, ID extends Number> implements InvocationHandler {
 
         private JpaRepository<E, ID> sqlRepository;
+        private MongoRepository<ME, ID> mongoRepository;
         private Class<E> sqlEntityClass;
+        private Class<ME> noSqlEntityClass;
         private Class<SM> splitEntity;
 
-        public SplitRepositoryInvocationHandler(JpaRepository<E, ID> sqlRepository, Class<E> sqlEntityClass, Class<SM> splitEntityClass) {
+        public SplitRepositoryInvocationHandler(JpaRepository<E, ID> sqlRepository, MongoRepository<ME, ID> mongoRepository, Class<E> sqlEntityClass, Class<ME> noSqlEntityClass, Class<SM> splitEntityClass) {
             this.sqlRepository = sqlRepository;
+            this.mongoRepository = mongoRepository;
             this.sqlEntityClass = sqlEntityClass;
+            this.noSqlEntityClass = noSqlEntityClass;
             this.splitEntity = splitEntityClass;
         }
 
@@ -99,13 +117,16 @@ public class SplitRepositoryConfiguration implements BeanFactoryAware {
             var methodName = method.getName();
             switch (methodName) {
                 case "save" -> {
-                    return sqlConnector.save((SM)args[0], sqlRepository, sqlEntityClass);
+                    var res = sqlConnector.save((SM)args[0], sqlRepository, sqlEntityClass);
+                    return noSQLConnector.save(res, mongoRepository, noSqlEntityClass);
                 }
                 case "findById" -> {
-                    return sqlConnector.findById((ID) args[0], sqlRepository, splitEntity);
+                    var res = sqlConnector.findById((ID) args[0], sqlRepository, splitEntity);
+                    return noSQLConnector.findById((ID) args[0], mongoRepository, res);
                 }
                 case "delete" -> {
                     sqlConnector.deleteById((ID) args[0], sqlRepository);
+                    noSQLConnector.deleteById((ID) args[0], mongoRepository);
                     return null;
                 }
             }

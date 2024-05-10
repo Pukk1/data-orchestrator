@@ -18,8 +18,8 @@ public class SQLConnector {
     public <SM, E, ID extends Number> SM save(SM splitEntity, JpaRepository<E, ID> repo, Class<E> entityClass) {
         E entity = modelMapper.map(splitEntity, entityClass);
         entity = repo.save(entity);
-        SM splitModel = (SM) modelMapper.map(entity, splitEntity.getClass());
-        return splitModel;
+        modelMapper.map(entity, splitEntity);
+        return splitEntity;
     }
 
     public <SM, E, ID extends Number> SM findById(ID splitEntityId, JpaRepository<E, ID> repo, Class<SM> splitEntityClass) {

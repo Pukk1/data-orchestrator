@@ -16,15 +16,20 @@ class ExampleApplicationTests {
     @Autowired
     private ExampleSplitModelRepository exampleSplitModelRepository;
 
-    @PostConstruct
-    public void onPostConstruct() {
-        System.out.println("askjdlaksjd");
+    @Test
+    void testSave() {
+		ExampleSplitModel exampleSplitModel = new ExampleSplitModel(11L, "test postgres", "test mongo", new byte[]{1, 2});
+		exampleSplitModelRepository.save(exampleSplitModel);
     }
 
     @Test
-    @Transactional
-    void testSave() {
-		ExampleSplitModel exampleSplitModel = new ExampleSplitModel(6L, "test postgres", "test mongo");
-		exampleSplitModelRepository.save(exampleSplitModel);
+    void testFindByID() {
+        var res = exampleSplitModelRepository.findById(11L);
+        System.out.println(res);
+    }
+
+    @Test
+    void testDeleteByID() {
+       exampleSplitModelRepository.deleteById(11L);
     }
 }

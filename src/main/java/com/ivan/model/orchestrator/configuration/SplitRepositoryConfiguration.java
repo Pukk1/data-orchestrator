@@ -1,6 +1,7 @@
 package com.ivan.model.orchestrator.configuration;
 
 import com.ivan.model.orchestrator.annatation.SplitEntity;
+import com.ivan.model.orchestrator.orchestrator.connector.MinioConnector;
 import com.ivan.model.orchestrator.orchestrator.connector.NoSQLConnector;
 import com.ivan.model.orchestrator.orchestrator.connector.SQLConnector;
 import com.ivan.model.orchestrator.repository.SplitRepository;
@@ -39,6 +40,8 @@ public class SplitRepositoryConfiguration implements BeanFactoryAware {
     private SQLConnector sqlConnector;
     @Autowired
     private NoSQLConnector noSQLConnector;
+    @Autowired
+    private MinioConnector minioConnector;
 
     private ConfigurableBeanFactory configurableBeanFactory;
 
@@ -96,20 +99,20 @@ public class SplitRepositoryConfiguration implements BeanFactoryAware {
                 .collect(Collectors.toList());
     }
 
-    public class SplitRepositoryInvocationHandler<SM, E,ME, ID extends Number> implements InvocationHandler {
+    public class SplitRepositoryInvocationHandler<SM, E, ME, ID extends Number> implements InvocationHandler {
 
         private JpaRepository<E, ID> sqlRepository;
         private MongoRepository<ME, ID> mongoRepository;
         private Class<E> sqlEntityClass;
         private Class<ME> noSqlEntityClass;
-        private Class<SM> splitEntity;
+        private Class<SM> splitEntityClass;
 
         public SplitRepositoryInvocationHandler(JpaRepository<E, ID> sqlRepository, MongoRepository<ME, ID> mongoRepository, Class<E> sqlEntityClass, Class<ME> noSqlEntityClass, Class<SM> splitEntityClass) {
             this.sqlRepository = sqlRepository;
             this.mongoRepository = mongoRepository;
             this.sqlEntityClass = sqlEntityClass;
             this.noSqlEntityClass = noSqlEntityClass;
-            this.splitEntity = splitEntityClass;
+            this.splitEntityClass = splitEntityClass;
         }
 
         @Override
@@ -117,16 +120,22 @@ public class SplitRepositoryConfiguration implements BeanFactoryAware {
             var methodName = method.getName();
             switch (methodName) {
                 case "save" -> {
-                    var res = sqlConnector.save((SM)args[0], sqlRepository, sqlEntityClass);
-                    return noSQLConnector.save(res, mongoRepository, noSqlEntityClass);
+                    var splitEntity = (SM) args[0];
+                    var res = sqlConnector.save(splitEntity, sqlRepository, sqlEntityClass);
+                    res = noSQLConnector.save(res, mongoRepository, noSqlEntityClass);
+                    return minioConnector.save(res);
                 }
                 case "findById" -> {
-                    var res = sqlConnector.findById((ID) args[0], sqlRepository, splitEntity);
-                    return noSQLConnector.findById((ID) args[0], mongoRepository, res);
+                    var id = (ID) args[0];
+                    var res = sqlConnector.findById(id, sqlRepository, splitEntityClass);
+                    res = noSQLConnector.findById(id, mongoRepository, res);
+                    return minioConnector.findById(id, res);
                 }
-                case "delete" -> {
-                    sqlConnector.deleteById((ID) args[0], sqlRepository);
-                    noSQLConnector.deleteById((ID) args[0], mongoRepository);
+                case "deleteById" -> {
+                    var id = (ID) args[0];
+                    sqlConnector.deleteById(id, sqlRepository);
+                    noSQLConnector.deleteById(id, mongoRepository);
+                    minioConnector.deleteById(id, splitEntityClass);
                     return null;
                 }
             }

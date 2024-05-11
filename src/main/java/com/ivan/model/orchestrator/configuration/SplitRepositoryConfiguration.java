@@ -6,20 +6,17 @@ import com.ivan.model.orchestrator.orchestrator.connector.NoSQLConnector;
 import com.ivan.model.orchestrator.orchestrator.connector.SQLConnector;
 import com.ivan.model.orchestrator.repository.SplitRepository;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.repository.NoRepositoryBean;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
@@ -31,17 +28,12 @@ import java.util.stream.Collectors;
 import static com.ivan.model.orchestrator.utils.TmpConsts.MY_PACKAGE;
 
 @Configuration
+@RequiredArgsConstructor
 public class SplitRepositoryConfiguration implements BeanFactoryAware {
 
-    @Autowired
-    private ApplicationContext applicationContext;
-
-    @Autowired
-    private SQLConnector sqlConnector;
-    @Autowired
-    private NoSQLConnector noSQLConnector;
-    @Autowired
-    private MinioConnector minioConnector;
+    private final SQLConnector sqlConnector;
+    private final NoSQLConnector noSQLConnector;
+    private final MinioConnector minioConnector;
 
     private ConfigurableBeanFactory configurableBeanFactory;
 
@@ -68,6 +60,9 @@ public class SplitRepositoryConfiguration implements BeanFactoryAware {
                     repoClass.getClassLoader(),
                     new Class[]{repoClass},
                     new SplitRepositoryInvocationHandler(
+                            sqlConnector,
+                            noSQLConnector,
+                            minioConnector,
                             sqlRepository,
                             noSqlRepository,
                             entity,
@@ -97,49 +92,5 @@ public class SplitRepositoryConfiguration implements BeanFactoryAware {
                         .getActualTypeArguments())
                 .map(it -> (Class) it)
                 .collect(Collectors.toList());
-    }
-
-    public class SplitRepositoryInvocationHandler<SM, E, ME, ID extends Number> implements InvocationHandler {
-
-        private JpaRepository<E, ID> sqlRepository;
-        private MongoRepository<ME, ID> mongoRepository;
-        private Class<E> sqlEntityClass;
-        private Class<ME> noSqlEntityClass;
-        private Class<SM> splitEntityClass;
-
-        public SplitRepositoryInvocationHandler(JpaRepository<E, ID> sqlRepository, MongoRepository<ME, ID> mongoRepository, Class<E> sqlEntityClass, Class<ME> noSqlEntityClass, Class<SM> splitEntityClass) {
-            this.sqlRepository = sqlRepository;
-            this.mongoRepository = mongoRepository;
-            this.sqlEntityClass = sqlEntityClass;
-            this.noSqlEntityClass = noSqlEntityClass;
-            this.splitEntityClass = splitEntityClass;
-        }
-
-        @Override
-        public Object invoke(Object proxy, Method method, Object[] args) {
-            var methodName = method.getName();
-            switch (methodName) {
-                case "save" -> {
-                    var splitEntity = (SM) args[0];
-                    var res = sqlConnector.save(splitEntity, sqlRepository, sqlEntityClass);
-                    res = noSQLConnector.save(res, mongoRepository, noSqlEntityClass);
-                    return minioConnector.save(res);
-                }
-                case "findById" -> {
-                    var id = (ID) args[0];
-                    var res = sqlConnector.findById(id, sqlRepository, splitEntityClass);
-                    res = noSQLConnector.findById(id, mongoRepository, res);
-                    return minioConnector.findById(id, res);
-                }
-                case "deleteById" -> {
-                    var id = (ID) args[0];
-                    sqlConnector.deleteById(id, sqlRepository);
-                    noSQLConnector.deleteById(id, mongoRepository);
-                    minioConnector.deleteById(id, splitEntityClass);
-                    return null;
-                }
-            }
-            return null;
-        }
     }
 }

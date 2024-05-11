@@ -17,19 +17,20 @@ class ExampleApplicationTests {
     private ExampleSplitModelRepository exampleSplitModelRepository;
 
     @Test
+//    @Transactional
     void testSave() {
-		ExampleSplitModel exampleSplitModel = new ExampleSplitModel(11L, "test postgres", "test mongo", new byte[]{1, 2});
+		ExampleSplitModel exampleSplitModel = new ExampleSplitModel(18L, "test postgres", "test mongo", new byte[]{1, 2});
 		exampleSplitModelRepository.save(exampleSplitModel);
     }
 
     @Test
     void testFindByID() {
-        var res = exampleSplitModelRepository.findById(11L);
+        var res = exampleSplitModelRepository.findById(18L);
         System.out.println(res);
     }
 
     @Test
     void testDeleteByID() {
-       exampleSplitModelRepository.deleteById(11L);
+       exampleSplitModelRepository.deleteById(18L);
     }
 }

@@ -23,20 +23,6 @@ public class SplitRepositoryInvocationHandler<SM, E, ME, ID extends Number> impl
     private final Class<ME> noSqlEntityClass;
     private final Class<SM> splitEntityClass;
 
-//    public SplitRepositoryInvocationHandler(
-//            JpaRepository<E, ID> sqlRepository,
-//            MongoRepository<ME, ID> mongoRepository,
-//            Class<E> sqlEntityClass,
-//            Class<ME> noSqlEntityClass,
-//            Class<SM> splitEntityClass
-//    ) {
-//        this.sqlRepository = sqlRepository;
-//        this.mongoRepository = mongoRepository;
-//        this.sqlEntityClass = sqlEntityClass;
-//        this.noSqlEntityClass = noSqlEntityClass;
-//        this.splitEntityClass = splitEntityClass;
-//    }
-
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) {
         var methodName = method.getName();

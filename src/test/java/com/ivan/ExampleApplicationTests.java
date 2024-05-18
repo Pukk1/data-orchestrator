@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -127,18 +129,65 @@ class ExampleApplicationTests {
 //        }
 //    }
 
-    @Test
-    public void testTransactionWithThrownPostgres() {
+    @ParameterizedTest
+    @MethodSource("gen")
+    public void testTransactionWithThrownPostgresBySave() {
 
     }
 
-    @Test
-    public void testTransactionWithThrownMongo() {
+    @ParameterizedTest
+    @MethodSource("gen")
+    public void testTransactionWithThrownPostgresByFind() {
 
     }
 
-    @Test
-    public void testTransactionWithThrownMinio() {
+    @ParameterizedTest
+    @MethodSource("gen")
+    public void testTransactionWithThrownPostgresByDelete() {
 
+    }
+
+    @ParameterizedTest
+    @MethodSource("gen")
+    public void testTransactionWithThrownMongoBySave() {
+
+    }
+
+    @ParameterizedTest
+    @MethodSource("gen")
+    public void testTransactionWithThrownMongoByFind() {
+
+    }
+
+    @ParameterizedTest
+    @MethodSource("gen")
+    public void testTransactionWithThrownMongoByDelete() {
+
+    }
+
+    @ParameterizedTest
+    @MethodSource("gen")
+    public void testTransactionWithThrownMinioBySave() {
+
+    }
+
+    @ParameterizedTest
+    @MethodSource("gen")
+    public void testTransactionWithThrownMinioByFind() {
+
+    }
+
+    @ParameterizedTest
+    @MethodSource("gen")
+    public void testTransactionWithThrownMinioByDelete() {
+
+    }
+
+    private List<Integer> gen() {
+        List<Integer> result = new ArrayList<>();
+        for (int i = 0; i < 100; i++) {
+            result.add(i);
+        }
+        return result;
     }
 }

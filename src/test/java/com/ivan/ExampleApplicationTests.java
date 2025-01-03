@@ -34,25 +34,63 @@ class ExampleApplicationTests {
 
     private final List<ExampleSplitModel> exampleSplitModels = new ArrayList<>();
 
-//    @Test
-//    void testSave() {
-//        for (var value : exampleSplitModels) {
-//            var result = exampleSplitModelRepository.save(value);
-//            Assertions.assertAll(
-//                    () -> Assertions.assertDoesNotThrow(
-//                            () -> {
-//                                if (!result.getId().equals(value.getId())) {
-//                                    throw new RuntimeException();
-//                                }
-//                            }
-//                    ),
+    @Test
+    void testSave() {
+        for (var value : exampleSplitModels) {
+            var result = exampleSplitModelRepository.save(value);
+            Assertions.assertAll(
+                    () -> Assertions.assertDoesNotThrow(
+                            () -> {
+                                if (!result.getId().equals(value.getId())) {
+                                    throw new RuntimeException();
+                                }
+                            }
+                    ),
+                    () -> Assertions.assertDoesNotThrow(
+                            () -> {
+                                if (!result.getPostgresText().equals(value.getPostgresText())) {
+                                    throw new RuntimeException();
+                                }
+                            }
+                    ),
+                    () -> Assertions.assertDoesNotThrow(
+                            () -> {
+                                if (!result.getMongoText().equals(value.getMongoText())) {
+                                    throw new RuntimeException();
+                                }
+                            }
+                    ),
+                    () -> Assertions.assertDoesNotThrow(
+                            () -> {
+                                if (!Arrays.equals(result.getMinioObject(), value.getMinioObject())) {
+                                    throw new RuntimeException();
+                                }
+                            }
+                    )
+            );
+        }
+    }
+
+    @Test
+    void testFindByID() {
+//        for (ExampleSplitModel value : exampleSplitModels) {
+        var value = exampleSplitModels.stream().findFirst().get();
+        var result = exampleSplitModelRepository.findById(value.getId());
+        Assertions.assertAll(
+                () -> Assertions.assertDoesNotThrow(
+                        () -> {
+                            if (!result.getId().equals(value.getId())) {
+                                throw new RuntimeException();
+                            }
+                        }
+                )
 //                    () -> Assertions.assertDoesNotThrow(
 //                            () -> {
 //                                if (!result.getPostgresText().equals(value.getPostgresText())) {
 //                                    throw new RuntimeException();
 //                                }
 //                            }
-//                    ),
+//                    )
 //                    () -> Assertions.assertDoesNotThrow(
 //                            () -> {
 //                                if (!result.getMongoText().equals(value.getMongoText())) {
@@ -67,127 +105,90 @@ class ExampleApplicationTests {
 //                                }
 //                            }
 //                    )
-//            );
+        );
 //        }
-//    }
-//
-//    @Test
-//    void testFindByID() {
-////        for (ExampleSplitModel value : exampleSplitModels) {
-//        var value = exampleSplitModels.stream().findFirst().get();
-//            var result = exampleSplitModelRepository.findById(value.getId());
-//            Assertions.assertAll(
-//                    () -> Assertions.assertDoesNotThrow(
-//                            () -> {
-//                                if (!result.getId().equals(value.getId())) {
-//                                    throw new RuntimeException();
-//                                }
-//                            }
-//                    )
-////                    () -> Assertions.assertDoesNotThrow(
-////                            () -> {
-////                                if (!result.getPostgresText().equals(value.getPostgresText())) {
-////                                    throw new RuntimeException();
-////                                }
-////                            }
-////                    )
-////                    () -> Assertions.assertDoesNotThrow(
-////                            () -> {
-////                                if (!result.getMongoText().equals(value.getMongoText())) {
-////                                    throw new RuntimeException();
-////                                }
-////                            }
-////                    ),
-////                    () -> Assertions.assertDoesNotThrow(
-////                            () -> {
-////                                if (!Arrays.equals(result.getMinioObject(), value.getMinioObject())) {
-////                                    throw new RuntimeException();
-////                                }
-////                            }
-////                    )
-//            );
-////        }
-//    }
-//
-//    @Test
-//    void testDeleteByID() {
-//        for (ExampleSplitModel value : exampleSplitModels) {
-//            Assertions.assertDoesNotThrow(() -> exampleSplitModelRepository.deleteById(value.getId()));
-//        }
-//    }
-//
-//    @BeforeAll
-//    public void getRandomLegalData() {
-//        for (int i = 0; i < 100; i++) {
-//            var model = new ExampleSplitModel(
-//                    new Random().nextLong(1, Long.MAX_VALUE),
-//                    "test postgres",
-//                    "test mongo",
-//                    new byte[]{1, 2, 3, 4}
-//            );
-//            exampleSplitModels.add(model);
-//        }
-//    }
-
-    @ParameterizedTest
-    @MethodSource("gen")
-    public void testTransactionWithThrownPostgresBySave() {
-
     }
 
-    @ParameterizedTest
-    @MethodSource("gen")
-    public void testTransactionWithThrownPostgresByFind() {
-
-    }
-
-    @ParameterizedTest
-    @MethodSource("gen")
-    public void testTransactionWithThrownPostgresByDelete() {
-
-    }
-
-    @ParameterizedTest
-    @MethodSource("gen")
-    public void testTransactionWithThrownMongoBySave() {
-
-    }
-
-    @ParameterizedTest
-    @MethodSource("gen")
-    public void testTransactionWithThrownMongoByFind() {
-
-    }
-
-    @ParameterizedTest
-    @MethodSource("gen")
-    public void testTransactionWithThrownMongoByDelete() {
-
-    }
-
-    @ParameterizedTest
-    @MethodSource("gen")
-    public void testTransactionWithThrownMinioBySave() {
-
-    }
-
-    @ParameterizedTest
-    @MethodSource("gen")
-    public void testTransactionWithThrownMinioByFind() {
-
-    }
-
-    @ParameterizedTest
-    @MethodSource("gen")
-    public void testTransactionWithThrownMinioByDelete() {
-
-    }
-
-    private List<Integer> gen() {
-        List<Integer> result = new ArrayList<>();
-        for (int i = 0; i < 100; i++) {
-            result.add(i);
+    @Test
+    void testDeleteByID() {
+        for (ExampleSplitModel value : exampleSplitModels) {
+            Assertions.assertDoesNotThrow(() -> exampleSplitModelRepository.deleteById(value.getId()));
         }
-        return result;
+    }
+
+    @BeforeAll
+    public void getRandomLegalData() {
+        for (int i = 0; i < 100; i++) {
+            var model = new ExampleSplitModel(
+                    new Random().nextLong(1, Long.MAX_VALUE),
+                    "test postgres",
+                    "test mongo",
+                    new byte[]{1, 2, 3, 4}
+            );
+            exampleSplitModels.add(model);
+        }
     }
 }
+
+//    @ParameterizedTest
+//    @MethodSource("gen")
+//    public void testTransactionWithThrownPostgresBySave() {
+//
+//    }
+//
+//    @ParameterizedTest
+//    @MethodSource("gen")
+//    public void testTransactionWithThrownPostgresByFind() {
+//
+//    }
+//
+//    @ParameterizedTest
+//    @MethodSource("gen")
+//    public void testTransactionWithThrownPostgresByDelete() {
+//
+//    }
+//
+//    @ParameterizedTest
+//    @MethodSource("gen")
+//    public void testTransactionWithThrownMongoBySave() {
+//
+//    }
+//
+//    @ParameterizedTest
+//    @MethodSource("gen")
+//    public void testTransactionWithThrownMongoByFind() {
+//
+//    }
+//
+//    @ParameterizedTest
+//    @MethodSource("gen")
+//    public void testTransactionWithThrownMongoByDelete() {
+//
+//    }
+//
+//    @ParameterizedTest
+//    @MethodSource("gen")
+//    public void testTransactionWithThrownMinioBySave() {
+//
+//    }
+//
+//    @ParameterizedTest
+//    @MethodSource("gen")
+//    public void testTransactionWithThrownMinioByFind() {
+//
+//    }
+//
+//    @ParameterizedTest
+//    @MethodSource("gen")
+//    public void testTransactionWithThrownMinioByDelete() {
+//
+//    }
+//
+//    private List<Integer> gen() {
+//        List<Integer> result = new ArrayList<>();
+//        for (int i = 0; i < 100; i++) {
+//            result.add(i);
+//        }
+//        return result;
+//    }
+//}
